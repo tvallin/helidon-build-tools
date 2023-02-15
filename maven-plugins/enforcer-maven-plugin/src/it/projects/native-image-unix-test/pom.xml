@@ -1,0 +1,172 @@
+<!--
+
+    Copyright (c) 2023 Oracle and/or its affiliates.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.helidon.build-tools.native.image.tests</groupId>
+    <artifactId>native-image-test</artifactId>
+    <version>@project.version@</version>
+    <name>Test Native Image Version Rule</name>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.helidon.build-tools</groupId>
+                <artifactId>helidon-enforcer-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <id>check-rules</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>native-image</rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>rule-1</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.helidon.build-tools</groupId>
+                        <artifactId>helidon-enforcer-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <nativeImageConfig>
+                                <failOnError>true</failOnError>
+                                <rules>
+                                    <rule>
+                                        <version>1.0.0</version>
+                                        <matcher>greaterThan</matcher>
+                                    </rule>
+                                    <rule>
+                                        <version>3.0.0</version>
+                                        <matcher>lessThan</matcher>
+                                    </rule>
+                                </rules>
+                            </nativeImageConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>rule-2</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.helidon.build-tools</groupId>
+                        <artifactId>helidon-enforcer-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <nativeImageConfig>
+                                <failOnError>true</failOnError>
+                                <rules>
+                                    <rule>
+                                        <version>2.0.0</version>
+                                        <matcher>greaterThan</matcher>
+                                    </rule>
+                                </rules>
+                            </nativeImageConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>rule-3</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.helidon.build-tools</groupId>
+                        <artifactId>helidon-enforcer-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <nativeImageConfig>
+                                <failOnError>true</failOnError>
+                                <rules>
+                                    <rule>
+                                        <version>2.0.0</version>
+                                        <matcher>lessThan</matcher>
+                                    </rule>
+                                </rules>
+                            </nativeImageConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>rule-4</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.helidon.build-tools</groupId>
+                        <artifactId>helidon-enforcer-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <nativeImageConfig>
+                                <failOnError>true</failOnError>
+                                <rules>
+                                    <rule>
+                                        <version>1.0.0</version>
+                                        <matcher>lessthanorequalto</matcher>
+                                    </rule>
+                                </rules>
+                            </nativeImageConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>rule-5</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.helidon.build-tools</groupId>
+                        <artifactId>helidon-enforcer-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <nativeImageConfig>
+                                <failOnError>true</failOnError>
+                                <rules>
+                                    <rule>
+                                        <version>3.0.0</version>
+                                        <matcher>greaterthanorequalto</matcher>
+                                    </rule>
+                                </rules>
+                            </nativeImageConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

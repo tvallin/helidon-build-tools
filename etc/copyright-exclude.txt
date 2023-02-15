@@ -39,3 +39,4 @@ HELIDON_THIRD_PARTY_LICENSES.xml
 freemarker-implicit.ftl
 expected
 expected-config
+native-image
