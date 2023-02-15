@@ -93,7 +93,7 @@ public class NativeImageRule {
         try {
             process = builder.start();
         } catch (IOException e) {
-            throw new EnforcerException("Fail to run native-image --version");
+            throw new EnforcerException("Fail to run native-image --version", e);
         }
 
         try {
