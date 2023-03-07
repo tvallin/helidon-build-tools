@@ -18,6 +18,7 @@ package io.helidon.build.maven.enforcer.nativeimage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,8 +83,7 @@ public class NativeImageRule {
 
     private Process startProcess() {
         Path nativeImage = findNativeImage();
-        if (nativeImage == null
-                || !nativeImage.toFile().exists()) {
+        if (nativeImage == null || !Files.exists(nativeImage)) {
             throw new EnforcerException("native-image executable not found.");
         }
         ProcessBuilder builder = new ProcessBuilder(nativeImage.toString(), "--version")
