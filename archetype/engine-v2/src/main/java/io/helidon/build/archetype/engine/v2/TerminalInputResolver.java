@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class TerminalInputResolver extends InputResolver {
 
     @Override
     public VisitResult visitBoolean(Input.Boolean input, Context context) {
-        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isModel(), input.isGlobal());
+        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isGlobal());
         VisitResult result = onVisitInput(input, nextScope, context);
         while (result == null) {
             try {
@@ -89,7 +89,7 @@ public class TerminalInputResolver extends InputResolver {
                 String defaultText = defaultValue != null ? BoldBlue.apply(Input.Boolean.asString(defaultValue)) : null;
                 String question = String.format("%s (yes/no)", Bold.apply(input.name()));
                 String response = prompt(question, defaultText);
-                if (response == null || response.trim().length() == 0) {
+                if (response == null || response.trim().isEmpty()) {
                     context.putValue(input.id(), defaultValue, ContextValue.ValueKind.DEFAULT);
                     if (defaultValue == null || !defaultValue.asBoolean()) {
                         result = VisitResult.SKIP_SUBTREE;
@@ -124,7 +124,7 @@ public class TerminalInputResolver extends InputResolver {
 
     @Override
     public VisitResult visitText(Input.Text input, Context context) {
-        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isModel(), input.isGlobal());
+        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isGlobal());
         VisitResult result = onVisitInput(input, nextScope, context);
         if (result == null) {
             try {
@@ -133,7 +133,7 @@ public class TerminalInputResolver extends InputResolver {
                 String response = prompt(Bold.apply(input.name()), defaultText);
                 ContextValue.ValueKind valueKind;
                 Value value;
-                if (response == null || response.trim().length() == 0) {
+                if (response == null || response.trim().isEmpty()) {
                     value = Value.create(defaultValue);
                     valueKind = ContextValue.ValueKind.DEFAULT;
                 } else {
@@ -152,7 +152,7 @@ public class TerminalInputResolver extends InputResolver {
 
     @Override
     public VisitResult visitEnum(Input.Enum input, Context context) {
-        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isModel(), input.isGlobal());
+        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isGlobal());
         VisitResult result = onVisitInput(input, nextScope, context);
         while (result == null) {
             String response = null;
@@ -178,7 +178,7 @@ public class TerminalInputResolver extends InputResolver {
                 lastName = input.name();
                 Value value;
                 ContextValue.ValueKind valueKind;
-                if ((response == null || response.trim().length() == 0)) {
+                if ((response == null || response.trim().isEmpty())) {
                     if (defaultIndex < 0) {
                         continue;
                     }
@@ -205,7 +205,7 @@ public class TerminalInputResolver extends InputResolver {
 
     @Override
     public VisitResult visitList(Input.List input, Context context) {
-        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isModel(), input.isGlobal());
+        ContextScope nextScope = context.scope().getOrCreate(input.id(), input.isGlobal());
         VisitResult result = onVisitInput(input, nextScope, context);
         while (result == null) {
             String response = null;
@@ -222,7 +222,7 @@ public class TerminalInputResolver extends InputResolver {
                 lastName = input.name();
                 Value value;
                 ContextValue.ValueKind valueKind;
-                if (response == null || response.trim().length() == 0) {
+                if (response == null || response.trim().isEmpty()) {
                     value = defaultValue;
                     valueKind = ContextValue.ValueKind.DEFAULT;
                 } else {

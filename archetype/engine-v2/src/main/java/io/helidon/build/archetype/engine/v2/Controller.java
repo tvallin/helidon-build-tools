@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,13 +62,13 @@ public final class Controller extends VisitorAdapter<Context> {
 
     @Override
     public VisitResult visitPreset(Preset preset, Context ctx) {
-        ctx.putValue(preset.path(), preset.value(), preset.isModel(), ValueKind.PRESET);
+        ctx.putValue(preset.path(), preset.value(), ValueKind.PRESET, preset.isModel());
         return VisitResult.CONTINUE;
     }
 
     @Override
     public VisitResult visitVariable(Variable variable, Context ctx) {
-        ctx.putValue(variable.path(), variable.value(), variable.isModel(), ValueKind.LOCAL_VAR);
+        ctx.putValue(variable.path(), variable.value(), ValueKind.LOCAL_VAR, variable.isModel());
         return VisitResult.CONTINUE;
     }
 

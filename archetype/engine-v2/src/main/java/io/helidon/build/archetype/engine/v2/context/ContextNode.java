@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2022, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ public final class ContextNode implements ContextScope {
     private final ContextEdge edge;
     private final String id;
     private final Function<ContextNode, ContextEdge> factory;
-    private final boolean model;
     private Visibility visibility;
 
     private ContextNode(Function<ContextNode, ContextEdge> factory) {
@@ -54,15 +53,13 @@ public final class ContextNode implements ContextScope {
         this.factory = Objects.requireNonNull(factory, "factory is null");
         this.edge = NoValueContextEdge.create(this);
         this.id = null;
-        this.model = false;
     }
 
     private ContextNode(ContextNode parent0,
                         ContextNode parent,
                         Function<ContextNode, ContextEdge> factory,
                         String id,
-                        Visibility visibility,
-                        boolean model) {
+                        Visibility visibility) {
 
         this.parent0 = Objects.requireNonNull(parent0, "parent0 is null");
         this.parent = Objects.requireNonNull(parent, "parent is null");
@@ -74,7 +71,6 @@ public final class ContextNode implements ContextScope {
         this.id = id;
         this.visibility = visibility;
         this.edge = factory.apply(this);
-        this.model = model;
     }
 
     /**
@@ -85,17 +81,14 @@ public final class ContextNode implements ContextScope {
      * @param factory    edge factory
      * @param id         node id
      * @param visibility visibility
-     * @param model      {@code true} if the value should be used as a model value
      * @return ContextNode
      */
     public static ContextNode create(ContextNode parent0,
                                      ContextNode parent,
                                      Function<ContextNode, ContextEdge> factory,
                                      String id,
-                                     Visibility visibility,
-                                     boolean model) {
-
-        return new ContextNode(parent0, parent, factory, id, visibility, model);
+                                     Visibility visibility) {
+        return new ContextNode(parent0, parent, factory, id, visibility);
     }
 
     /**
@@ -138,15 +131,6 @@ public final class ContextNode implements ContextScope {
      */
     public String id() {
         return id;
-    }
-
-    /**
-     * Test if this node be used as model value.
-     *
-     * @return {@code true} if the value should be used as a model value
-     */
-    public boolean isModel() {
-        return model;
     }
 
     @Override
@@ -215,7 +199,7 @@ public final class ContextNode implements ContextScope {
         Deque<ContextNode> copyStack = new ArrayDeque<>();
         ContextValue value = edge.value();
         if (value != null) {
-            target.edge.value(value.value(), value.kind());
+            target.edge.value(value.value(), value.kind(), value.isModel());
         }
         for (ContextNode child : edge.children()) {
             stack.push(child);
@@ -226,10 +210,10 @@ public final class ContextNode implements ContextScope {
             ContextNode parent = copyStack.pop();
             ContextEdge parentEdge = parent.edge();
             ContextNode copy;
-            copy = new ContextNode(parent, parent, src.factory, src.id, src.visibility, src.model);
+            copy = new ContextNode(parent, parent, src.factory, src.id, src.visibility);
             value = src.edge.value();
             if (value != null) {
-                copy.edge.value(value.value(), value.kind());
+                copy.edge.value(value.value(), value.kind(), value.isModel());
             }
             parentEdge.children().add(copy);
             for (ContextNode contextScope : src.edge.children()) {
@@ -252,7 +236,7 @@ public final class ContextNode implements ContextScope {
     }
 
     @Override
-    public ContextNode getOrCreate(String path, boolean model, Visibility visibility) {
+    public ContextNode getOrCreate(String path, Visibility visibility) {
         if (path.indexOf(PATH_SEPARATOR_CHAR) >= 0 || path.indexOf(ROOT_REF_CHAR) >= 0) {
             throw new IllegalArgumentException("Invalid id");
         }
@@ -261,7 +245,7 @@ public final class ContextNode implements ContextScope {
             node.updateVisibility(visibility);
             return node;
         }
-        node = new ContextNode(this, this, factory, path, visibility, model);
+        node = new ContextNode(this, this, factory, path, visibility);
         if (this != root) {
             if (visibility == Visibility.GLOBAL || this.visibility == Visibility.GLOBAL) {
                 ContextNode existing = root.find(path);
@@ -277,28 +261,18 @@ public final class ContextNode implements ContextScope {
     }
 
     @Override
-    public ContextNode getOrCreate(String path, Visibility visibility) {
-        return getOrCreate(path, false, visibility);
-    }
-
-    @Override
     public void clear() {
         edge.clear();
     }
 
     @Override
-    public ContextValue putValue(String path, Value value, ValueKind kind) {
-        return putValue(path, value, model, kind);
-    }
-
-    @Override
-    public ContextValue putValue(String path, Value value, boolean model, ValueKind kind) {
+    public ContextValue putValue(String path, Value value, ValueKind kind, boolean isModel) {
         String[] segments = ContextPath.parse(path);
-        ContextNode node = resolve(segments, (s, sid) -> s.getOrCreate(sid, model, Visibility.UNSET));
+        ContextNode node = resolve(segments, (s, sid) -> s.getOrCreate(sid, Visibility.UNSET));
         if (node == null) {
             throw new IllegalStateException("Unresolved node: " + path);
         }
-        return node.edge.value(value, kind);
+        return node.edge.value(value, kind, isModel);
     }
 
     @Override
@@ -366,23 +340,21 @@ public final class ContextNode implements ContextScope {
 
     private ContextNode resolve(String[] segments, BiFunction<ContextNode, String, ContextNode> fn) {
         ContextNode node = this;
-        for (int i = 0; i < segments.length; i++) {
+        for (int i = 0; i < segments.length && node != null; i++) {
             String segment = segments[i];
             if (i == 0 && ROOT_REF.equals(segment)) {
                 node = root;
             } else if (PARENT_REF.equals(segment)) {
                 node = i == 0 ? parent : node.parent;
                 if (node == null) {
-                    //it was a root node
+                    // it was a root node
                     node = root;
                 }
             } else {
+                boolean global = node.visibility == Visibility.GLOBAL;
                 node = fn.apply(node, segment);
-                if (node == null) {
-                    if (this != root) {
-                        return root.resolve(segments, fn);
-                    }
-                    return null;
+                if (node == null && global) {
+                    node = fn.apply(root, segment);
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import io.helidon.build.archetype.engine.v2.util.ValueDelegate;
 /**
  * Context value.
  * A context value qualifies the connection between nodes in the context tree.
- * It is a decorates an actual value with a kind that qualifies a value, see {@link ValueKind}.
+ * It decorates a {@link Value} with a {@link ValueKind}.
  *
  * @see ContextEdge
  */
@@ -29,23 +29,26 @@ public final class ContextValue extends ValueDelegate {
 
     private final ContextScope scope;
     private final ValueKind kind;
+    private final boolean isModel;
 
-    private ContextValue(ContextScope scope, Value value, ValueKind kind) {
+    private ContextValue(ContextScope scope, Value value, ValueKind kind, boolean isModel) {
         super(value);
         this.scope = scope;
         this.kind = kind;
+        this.isModel = isModel;
     }
 
     /**
      * Create a new context value.
      *
-     * @param scope scope
-     * @param value wrapped value
-     * @param kind  value kind
+     * @param scope   scope
+     * @param value   wrapped value
+     * @param kind    value kind
+     * @param isModel {@code true} if this is a model value
      * @return new instance
      */
-    public static ContextValue create(ContextScope scope, Value value, ValueKind kind) {
-        return new ContextValue(scope, value, kind);
+    public static ContextValue create(ContextScope scope, Value value, ValueKind kind, boolean isModel) {
+        return new ContextValue(scope, value, kind, isModel);
     }
 
     /**
@@ -73,6 +76,15 @@ public final class ContextValue extends ValueDelegate {
     }
 
     /**
+     * Test if this node should be used as model value.
+     *
+     * @return {@code true} if this node should be used as a model value
+     */
+    public boolean isModel() {
+        return isModel;
+    }
+
+    /**
      * Get the value kind.
      *
      * @return ValueKind
@@ -84,9 +96,10 @@ public final class ContextValue extends ValueDelegate {
     @Override
     public String toString() {
         return "ContextValue{"
-                + "kind=" + kind
-                + ", value=" + value()
-                + '}';
+               + "kind=" + kind
+               + ", value=" + value()
+               + ", isModel=" + isModel
+               + '}';
     }
 
     /**

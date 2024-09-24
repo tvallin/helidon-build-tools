@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ package io.helidon.build.archetype.engine.v2;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.helidon.build.archetype.engine.v2.ast.Script;
 import io.helidon.build.archetype.engine.v2.ast.Value;
@@ -32,10 +35,8 @@ import static io.helidon.build.archetype.engine.v2.TestHelper.load;
 import static io.helidon.build.archetype.engine.v2.TestHelper.readFile;
 import static io.helidon.build.common.FileUtils.unique;
 import static io.helidon.build.common.test.utils.TestFiles.targetDir;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -49,16 +50,19 @@ class OutputGeneratorTest {
         Path outputDir = generate("generator/context-values.xml");
         Path expected = outputDir.resolve("context-values.txt");
         assertThat(Files.exists(expected), is(true));
-        assertThat(readFile(expected), containsString("bar\n"));
-        assertThat(readFile(expected), containsString("se\n"));
-        assertThat(readFile(expected), containsString("true\n"));
-        assertThat(readFile(expected), containsString("test variable 1\n"));
-        assertThat(readFile(expected), containsString("test variable 2\n"));
-        assertThat(readFile(expected), containsString("test variable 3\n"));
-        assertThat(readFile(expected), not(containsString("test variable 4\n")));
-        assertThat(readFile(expected), containsString("test var 5 section\n"));
-        assertThat(readFile(expected), containsString("test var 7 section\n"));
+        String str = readFile(expected);
+        Deque<String> stack = str.lines().collect(Collectors.toCollection(ArrayDeque::new));
+        assertThat(stack.size(), is(8));
+        assertThat(stack.pop(), is("bar"));
+        assertThat(stack.pop(), is("se"));
+        assertThat(stack.pop(), is("true"));
+        assertThat(stack.pop(), is("test variable 1"));
+        assertThat(stack.pop(), is("test variable 2"));
+        assertThat(stack.pop(), is("test variable 3"));
+        assertThat(stack.pop(), is("test var 5 section"));
+        assertThat(stack.pop(), is("test var 7 section"));
     }
+
     @Test
     void testFile() throws IOException {
         Path outputDir = generate("generator/file.xml");
@@ -119,6 +123,7 @@ class OutputGeneratorTest {
         Path outputDir = generate("generator/processed-values.xml");
         Path expected = outputDir.resolve("shapes.txt");
         assertThat(Files.exists(expected), is(true));
+        //noinspection ConcatenationWithEmptyString
         assertThat(readFile(expected), is(""
                 + "Here is a red circle\n"
                 + "Here is a blue triangle\n"

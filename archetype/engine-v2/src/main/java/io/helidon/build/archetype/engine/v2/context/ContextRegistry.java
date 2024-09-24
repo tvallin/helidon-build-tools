@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2022, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,18 +33,20 @@ public interface ContextRegistry {
      * @param kind  value kind
      * @return the created context value
      */
-    ContextValue putValue(String path, Value value, ValueKind kind);
+    default ContextValue putValue(String path, Value value, ValueKind kind) {
+        return putValue(path, value, kind, false);
+    }
 
     /**
      * Set a value.
      *
-     * @param path  context path, see {@link ContextPath}
-     * @param value the value
-     * @param model if value should be used as a model value
-     * @param kind  value kind
+     * @param path    context path, see {@link ContextPath}
+     * @param value   the value
+     * @param kind    value kind
+     * @param isModel {@code true} if this is a model value
      * @return the created context value
      */
-    ContextValue putValue(String path, Value value, boolean model, ValueKind kind);
+    ContextValue putValue(String path, Value value, ValueKind kind, boolean isModel);
 
     /**
      * Lookup a value.

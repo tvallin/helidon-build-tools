@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import io.helidon.build.archetype.engine.v2.MustacheProvider;
-import io.helidon.build.archetype.engine.v2.spi.TemplateSupportProvider;
 
 /**
  * Helidon archetype engine.
@@ -33,6 +30,7 @@ module io.helidon.build.archetype.engine.v2 {
     exports io.helidon.build.archetype.engine.v2.util;
     exports io.helidon.build.archetype.engine.v2.context;
 
-    uses TemplateSupportProvider;
-    provides TemplateSupportProvider with MustacheProvider;
+    uses io.helidon.build.archetype.engine.v2.spi.TemplateSupportProvider;
+    provides io.helidon.build.archetype.engine.v2.spi.TemplateSupportProvider
+            with io.helidon.build.archetype.engine.v2.MustacheProvider;
 }

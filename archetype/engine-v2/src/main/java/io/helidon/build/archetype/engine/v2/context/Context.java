@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.function.Function;
 
 import io.helidon.build.archetype.engine.v2.ast.DynamicValue;
 import io.helidon.build.archetype.engine.v2.ast.Value;
+import io.helidon.build.archetype.engine.v2.context.ContextScope.Visibility;
 import io.helidon.build.archetype.engine.v2.context.ContextValue.ValueKind;
 
 import static io.helidon.build.common.PropertyEvaluator.evaluate;
@@ -101,23 +102,11 @@ public final class Context implements ContextRegistry {
      * Push a scope.
      *
      * @param id     scope id
-     * @param model  {@code true} if the value should be used as a model value
-     * @param global {@code true} if the scope should be global, {@code false} if local.
-     * @return the new current scope
-     */
-    public ContextScope pushScope(String id, boolean model, boolean global) {
-        return pushScope(scope.getOrCreate(id, model, global));
-    }
-
-    /**
-     * Push a scope.
-     *
-     * @param id     scope id
      * @param global {@code true} if the scope should be global, {@code false} if local.
      * @return the new current scope
      */
     public ContextScope pushScope(String id, boolean global) {
-        return pushScope(scope.getOrCreate(id, false, global));
+        return pushScope(scope.getOrCreate(id, global));
     }
 
     /**
@@ -153,17 +142,18 @@ public final class Context implements ContextRegistry {
         if (scope.parent() == null) {
             throw new NoSuchElementException();
         }
+        ContextScope previous = scope;
         scope = scope.parent0();
+        if (previous.visibility() == Visibility.GLOBAL) {
+            Map<String, ContextValue> values = previous.values();
+            previous.clear();
+            values.forEach((k, v) -> scope.putValue(k, v.value(), v.kind(), v.isModel()));
+        }
     }
 
     @Override
-    public ContextValue putValue(String path, Value value, ValueKind kind) {
-        return scope.putValue(path, value, kind);
-    }
-
-    @Override
-    public ContextValue putValue(String path, Value value, boolean model, ValueKind kind) {
-        return scope.putValue(path, value, model, kind);
+    public ContextValue putValue(String path, Value value, ValueKind kind, boolean isModel) {
+        return scope.putValue(path, value, kind, isModel);
     }
 
     @Override

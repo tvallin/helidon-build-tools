@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2022 Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package io.helidon.build.archetype.engine.v2;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +37,7 @@ import io.helidon.build.archetype.engine.v2.ast.Value;
 import io.helidon.build.archetype.engine.v2.ast.ValueTypes;
 import io.helidon.build.archetype.engine.v2.context.Context;
 import io.helidon.build.archetype.engine.v2.context.ContextScope;
-import io.helidon.build.archetype.engine.v2.context.ContextValue;
+import io.helidon.build.archetype.engine.v2.context.ContextValue.ValueKind;
 import io.helidon.build.common.GenericType;
 
 import static io.helidon.build.archetype.engine.v2.ast.Input.Enum.optionIndex;
@@ -54,7 +54,7 @@ public abstract class InputResolver implements Input.Visitor<Context>, Validatio
     private final Deque<DeclaredInput> parents = new ArrayDeque<>();
     private final Deque<Step> currentSteps = new ArrayDeque<>();
     private final Set<Step> visitedSteps = new HashSet<>();
-    private LinkedList<Validation.Regex> regexs;
+    private List<Validation.Regex> regexps;
 
     /**
      * Get the stack of steps.
@@ -117,7 +117,7 @@ public abstract class InputResolver implements Input.Visitor<Context>, Validatio
             if ((input instanceof Input.List)) {
                 // auto create a value for lists without options
                 if (options.isEmpty()) {
-                    return context.putValue(input.id(), Value.create(List.of()), ContextValue.ValueKind.DEFAULT);
+                    return context.putValue(input.id(), Value.create(List.of()), ValueKind.DEFAULT, input.isModel());
                 }
             } else if (input instanceof Input.Enum) {
                 // auto create a value if there is only one option with a default value
@@ -125,7 +125,7 @@ public abstract class InputResolver implements Input.Visitor<Context>, Validatio
                 if (defaultValue != null) {
                     int defaultIndex = optionIndex(defaultValue.asString(), options);
                     if (options.size() == 1 && defaultIndex >= 0) {
-                        return context.putValue(input.id(), defaultValue, ContextValue.ValueKind.DEFAULT);
+                        return context.putValue(input.id(), defaultValue, ValueKind.DEFAULT, input.isModel());
                     }
                 }
             }
@@ -185,14 +185,14 @@ public abstract class InputResolver implements Input.Visitor<Context>, Validatio
 
     @Override
     public VisitResult visitValidation(Validation validation, Context arg) {
-        this.regexs = new LinkedList<>();
-        this.validations.put(validation.id(), this.regexs);
+        this.regexps = new ArrayList<>();
+        this.validations.put(validation.id(), regexps);
         return VisitResult.CONTINUE;
     }
 
     @Override
     public VisitResult visitRegex(Validation.Regex regex, Context arg) {
-        this.regexs.add(regex);
+        this.regexps.add(regex);
         return VisitResult.CONTINUE;
     }
 

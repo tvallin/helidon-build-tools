@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Oracle and/or its affiliates.
+ * Copyright (c) 2022, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ public final class WriteableContextEdge implements ContextEdge {
     }
 
     @Override
-    public ContextValue value(Value newValue, ValueKind kind) {
+    public ContextValue value(Value newValue, ValueKind kind, boolean isModel) {
         if (value == null || !value.isReadOnly()) {
-            value = ContextValue.create(node, newValue, kind);
+            value = ContextValue.create(node, newValue, kind, isModel);
             return value;
         }
         GenericType<?> type = value.type();

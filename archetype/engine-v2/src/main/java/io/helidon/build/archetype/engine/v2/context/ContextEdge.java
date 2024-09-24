@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Oracle and/or its affiliates.
+ * Copyright (c) 2022, 2024 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,12 @@ public interface ContextEdge {
     /**
      * Update the value.
      *
-     * @param value the new value
-     * @param kind  value kind
+     * @param value   the new value
+     * @param kind    value kind
+     * @param isModel {@code true} if this is a model value
      * @return created context value
      */
-    ContextValue value(Value value, ValueKind kind);
+    ContextValue value(Value value, ValueKind kind, boolean isModel);
 
     /**
      * Get the parent node.
