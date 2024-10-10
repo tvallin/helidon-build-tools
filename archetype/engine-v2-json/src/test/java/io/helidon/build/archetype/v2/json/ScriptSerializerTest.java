@@ -101,6 +101,18 @@ class ScriptSerializerTest {
     }
 
     @Test
+    void testInlined5() throws IOException {
+        Path targetDir = targetDir(this.getClass());
+        Path sourceDir = targetDir.resolve("test-classes/inlined5");
+        Path expected = targetDir.resolve("test-classes/expected/inlined5.json");
+        FileSystem fs = VirtualFileSystem.create(sourceDir);
+
+        JsonObject archetypeJson = ScriptSerializer.serialize(fs);
+        System.out.println(JsonFactory.toPrettyString(archetypeJson));
+        assertThat(jsonDiff(archetypeJson, readJson(expected)), is(EMPTY_JSON_ARRAY));
+    }
+
+    @Test
     void testEmptyMethodNotCompiled() throws IOException {
         Path targetDir = targetDir(this.getClass());
         Path sourceDir = targetDir.resolve("test-classes/empty-method");

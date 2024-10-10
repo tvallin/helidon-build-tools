@@ -49,4 +49,16 @@ class ScriptDeserializerTest {
         System.out.println(JsonFactory.toPrettyString(archetypeJson));
         assertThat(jsonDiff(archetypeJson, readJson(expected)), is(EMPTY_JSON_ARRAY));
     }
+
+    @Test
+    void testDeserializeCondition() throws IOException {
+        Path targetDir = targetDir(this.getClass());
+        Path jsonFile = targetDir.resolve("test-classes/deserializer/script1.json");
+        Path expected = targetDir.resolve("test-classes/expected/deserializer.json");
+        Script script = ScriptDeserializer.deserialize(Files.newInputStream(jsonFile));
+
+        JsonObject archetypeJson = ScriptSerializer.serialize(script);
+        System.out.println(JsonFactory.toPrettyString(archetypeJson));
+        assertThat(jsonDiff(archetypeJson, readJson(expected)), is(EMPTY_JSON_ARRAY));
+    }
 }

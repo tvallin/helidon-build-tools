@@ -158,6 +158,10 @@ public final class Condition extends Node {
             return this;
         }
 
+        public boolean isThenNull() {
+            return then == null;
+        }
+
         @Override
         protected Condition doBuild() {
             return new Condition(this);

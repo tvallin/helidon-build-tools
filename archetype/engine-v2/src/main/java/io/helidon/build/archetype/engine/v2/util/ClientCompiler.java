@@ -150,6 +150,7 @@ public class ClientCompiler implements Node.Visitor<Script> {
     @Override
     public Node.VisitResult postVisitBlock(Block block, Script arg) {
         Node.Builder<?, ?> builder = stack.pop();
+        Node.Builder<?, ?> parentBuilder = stack.peek();
         if (builder.children().isEmpty()) {
             // skip certain blocks without children
             switch (block.kind()) {
@@ -159,12 +160,18 @@ public class ClientCompiler implements Node.Visitor<Script> {
                 case VARIABLES:
                 case INVOKE:
                 case INVOKE_DIR:
-                    Node.Builder<?, ?> parentBuilder = stack.peek();
                     if (parentBuilder != null) {
                         parentBuilder.nestedBuilders().remove(builder);
                     }
                     return Node.VisitResult.CONTINUE;
                 default:
+            }
+        }
+
+        if (builder instanceof Condition.Builder) {
+            if (((Condition.Builder) builder).isThenNull() && parentBuilder != null) {
+                parentBuilder.nestedBuilders().remove(builder);
+                return Node.VisitResult.CONTINUE;
             }
         }
         builder.build();

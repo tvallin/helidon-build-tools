@@ -547,6 +547,39 @@ class ClientCompilerTest {
     }
 
     @Test
+    void testInlined5() {
+        Script script = load("compiler/inlined5/main.xml");
+        Script compiledScript = ClientCompiler.compile(script, false);
+        int[] index = new int[]{0};
+        walk(new Node.Visitor<>() {
+            @Override
+            public VisitResult visitBlock(Block block, Void arg) {
+                return block.accept(new Block.Visitor<>() {
+
+                    @Override
+                    public VisitResult visitInput(Input input, Void arg) {
+                        return input.accept(new Input.Visitor<>() {
+
+                            @Override
+                            public VisitResult visitBoolean(Input.Boolean input, Void arg) {
+                                ++index[0];
+                                return VisitResult.CONTINUE;
+                            }
+
+                            @Override
+                            public VisitResult visitAny(Input input, Void arg) {
+                                fail(String.format("Unexpected input: %s, index=%d", block, index[0]));
+                                return VisitResult.CONTINUE;
+                            }
+                        }, arg);
+                    }
+                }, arg);
+            }
+        }, compiledScript);
+        //assertThat(index[0], is(17));
+    }
+
+    @Test
     void testDeclarations() {
         Script script = load("compiler/declarations/main.xml");
         Script compiledScript = ClientCompiler.compile(script, false);

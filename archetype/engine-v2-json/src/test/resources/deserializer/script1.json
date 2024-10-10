@@ -1,0 +1,84 @@
+{
+  "expressions": {
+    "1": [
+      {
+        "kind": "variable",
+        "value": "foo"
+      }
+    ],
+    "2": [
+      {
+        "kind": "variable",
+        "value": "bar2"
+      }
+    ],
+    "3": [
+      {
+        "kind": "variable",
+        "value": "bar3"
+      }
+    ]
+  },
+  "methods": {
+  },
+  "children": [
+    {
+      "kind": "variables",
+      "children": [
+        {
+          "kind": "boolean",
+          "path": "foo",
+          "value": true
+        },
+        {
+          "kind": "boolean",
+          "path": "bar2",
+          "value": true
+        },
+        {
+          "kind": "boolean",
+          "path": "bar3",
+          "value": true
+        }
+      ]
+    },
+    {
+      "kind": "step",
+      "name": "Step2",
+      "id": "1",
+      "if": "2",
+      "children": [
+        {
+          "kind": "inputs",
+          "children": [
+            {
+              "kind": "boolean",
+              "name": "Boolean2",
+              "id": "boolean2",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "step",
+      "name": "Step3",
+      "id": "2",
+      "if": "3",
+      "children": [
+        {
+          "kind": "inputs",
+          "children": [
+            {
+              "kind": "boolean",
+              "name": "Boolean3",
+              "id": "boolean3",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
