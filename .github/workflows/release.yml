@@ -74,3 +74,38 @@ jobs:
           artifact-name: io-helidon-build-tools-artifacts-${{ github.ref_name }}
           artifact-path: target/nexus-staging/
           run: etc/scripts/release.sh release_build
+  homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-20.04
+    # Skip this job if the release tag does not contain cli
+    if: ${{ contains(needs.create-tag.outputs.tag, 'cli/') }}
+    steps:
+      - uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          # By default, this will edit the `helidon.rb` formula in
+          # homebrew-core to update its "url" field to:
+          # `https://github.com/OWNER/REPO/archive/refs/tags/<tag-name>.tar.gz`
+          # The "sha256" formula field will get automatically recomputed.
+          formula-name: helidon
+          tag-name: ${{ needs.create-tag.outputs.tag }}
+        env:
+          # the personal access token should have "repo" & "workflow" scopes
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
+  sdkman:
+    name: Update SDKMan binaries
+    runs-on: ubuntu-20.04
+    # Skip this job if the release tag does not contain cli
+    if: ${{ contains(needs.create-tag.outputs.tag, 'cli/') }}
+    steps:
+      - id: update-sdkman-cli-binaries
+        env:
+          SDKMAN_CONSUMER_KEY: ${{ secrets.SDKMAN_CONSUMER_KEY }}
+          SDKMAN_CONSUMER_TOKEN: ${{ secrets.SDKMAN_CONSUMER_TOKEN }}
+        run: |
+          curl -X POST \
+               -H "Consumer-Key: ${{ env.SDKMAN_CONSUMER_KEY }}" \
+               -H "Consumer-Token: ${{ env.SDKMAN_CONSUMER_TOKEN }}" \
+               -H "Content-Type: application/json" \
+               -H "Accept: application/json" \
+               -d '{"candidate": "helidon", "version": "${{ needs.create-tag.outputs.tag }}", "url": "https://github.com/helidon-io/helidon-build-tools/releases/download/${{ needs.create-tag.outputs.tag }}/helidon-cli.zip"}' \
+               https://vendors.sdkman.io/release
