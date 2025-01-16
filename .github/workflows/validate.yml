@@ -115,7 +115,7 @@ jobs:
       - uses: ./.github/actions/common
         with:
           build-cache: read-only
-          test-artifact-name: tests-${{ matrix.moduleSet }}
+          test-artifact-name: tests-${{ matrix.moduleSet }}-${{ matrix.os }}
           run: |
             mvn ${MVN_ARGS} \
               -DreactorRule=tests \
