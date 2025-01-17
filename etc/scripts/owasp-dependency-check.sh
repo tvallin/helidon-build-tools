@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2020, 2024 Oracle and/or its affiliates.
+# Copyright (c) 2020, 2025 Oracle and/or its affiliates.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,13 +48,13 @@ die() { cat "${RESULT_FILE}" ; echo "Dependency report in ${WS_DIR}/target" ; ec
 if [ "${PIPELINE}" = "true" ] ; then
     # If in pipeline do a priming build before scan
     # shellcheck disable=SC2086
-    mvn ${MAVEN_ARGS} -f "${WS_DIR}"/pom.xml clean install -DskipTests
+    mvn ${MVN_ARGS} -f "${WS_DIR}"/pom.xml clean install -DskipTests
 fi
 
 # Setting NVD_API_KEY is not required but improves behavior of NVD API throttling
 
 # shellcheck disable=SC2086
-mvn ${MAVEN_ARGS} -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN org.owasp:dependency-check-maven:aggregate \
+mvn ${MVN_ARGS} -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN org.owasp:dependency-check-maven:aggregate \
         -f "${WS_DIR}"/pom.xml \
         -Dtop.parent.basedir="${WS_DIR}" \
         -Dnvd-api-key="${NVD_API_KEY}" \
