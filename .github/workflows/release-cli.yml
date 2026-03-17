@@ -24,7 +24,7 @@ on:
         type: string
         default: ''
     secrets:
-      SERVICE_ACCOUNT_TOKEN:
+      CHECKOUT_TOKEN:
         required: true
 
 concurrency:
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
+          token: ${{ secrets.CHECKOUT_TOKEN }}
       - uses: ./.github/actions/common
         with:
           run: |

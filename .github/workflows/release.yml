@@ -111,4 +111,4 @@ jobs:
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
     secrets:
-      SERVICE_ACCOUNT_TOKEN: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
+      CHECKOUT_TOKEN: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
