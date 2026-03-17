@@ -35,78 +35,80 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  create-tag:
-    runs-on: ubuntu-22.04
-    environment: release
-    outputs:
-      version: ${{ steps.create-tag.outputs.version }}
-      tag: ${{ steps.create-tag.outputs.tag }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: '0'
-          token: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
-      - id: create-tag
-        run: ./etc/scripts/release.sh create_tag >> "${GITHUB_OUTPUT}"
-  validate:
-    needs: create-tag
-    uses: ./.github/workflows/validate.yml
-    with:
-      ref: ${{ needs.create-tag.outputs.tag }}
-  stage:
-    needs: [ create-tag, validate ]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    environment: release
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create-tag.outputs.tag }}
-      - shell: bash
-        env:
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        run: ./etc/scripts/setup-gpg.sh
-      - uses: ./.github/actions/common
-        with:
-          build-cache: read-only
-          artifact-name: io-helidon-build-tools-artifacts-${{ github.ref_name }}
-          artifact-path: staging
-          run: |
-            mvn ${MVN_ARGS} \
-              -Prelease,no-snapshots \
-              -DskipTests \
-              -DaltDeploymentRepository=":::file://${PWD}/staging" \
-              deploy
-  deploy:
-    needs: [ create-tag, stage ]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    environment: release
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: '0'
-          ref: ${{ needs.create-tag.outputs.tag }}
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: io-helidon-build-tools-artifacts-*
-          path: staging
-          merge-multiple: true
-      - shell: bash
-        env:
-          CENTRAL_USER: ${{ secrets.CENTRAL_USER }}
-          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-        run: |
-          etc/scripts/upload.sh upload_release \
-            --dir="staging" \
-            --description="Helidon v%{version}"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: io-helidon-artifacts-${{ needs.create-tag.outputs.version }}
-          path: staging
+#  create-tag:
+#    runs-on: ubuntu-22.04
+#    environment: release
+#    outputs:
+#      version: ${{ steps.create-tag.outputs.version }}
+#      tag: ${{ steps.create-tag.outputs.tag }}
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: '0'
+#          token: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
+#      - id: create-tag
+#        run: ./etc/scripts/release.sh create_tag >> "${GITHUB_OUTPUT}"
+#  validate:
+#    needs: create-tag
+#    uses: ./.github/workflows/validate.yml
+#    with:
+#      ref: ${{ needs.create-tag.outputs.tag }}
+#  stage:
+#    needs: [ create-tag, validate ]
+#    runs-on: ubuntu-24.04
+#    timeout-minutes: 30
+#    environment: release
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          ref: ${{ needs.create-tag.outputs.tag }}
+#      - shell: bash
+#        env:
+#          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+#          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+#        run: ./etc/scripts/setup-gpg.sh
+#      - uses: ./.github/actions/common
+#        with:
+#          build-cache: read-only
+#          artifact-name: io-helidon-build-tools-artifacts-${{ github.ref_name }}
+#          artifact-path: staging
+#          run: |
+#            mvn ${MVN_ARGS} \
+#              -Prelease,no-snapshots \
+#              -DskipTests \
+#              -DaltDeploymentRepository=":::file://${PWD}/staging" \
+#              deploy
+#  deploy:
+#    needs: [ create-tag, stage ]
+#    runs-on: ubuntu-24.04
+#    timeout-minutes: 20
+#    environment: release
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: '0'
+#          ref: ${{ needs.create-tag.outputs.tag }}
+#      - uses: actions/download-artifact@v4
+#        with:
+#          pattern: io-helidon-build-tools-artifacts-*
+#          path: staging
+#          merge-multiple: true
+#      - shell: bash
+#        env:
+#          CENTRAL_USER: ${{ secrets.CENTRAL_USER }}
+#          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+#        run: |
+#          etc/scripts/upload.sh upload_release \
+#            --dir="staging" \
+#            --description="Helidon v%{version}"
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: io-helidon-artifacts-${{ needs.create-tag.outputs.version }}
+#          path: staging
   release-cli:
     if: ${{ startsWith(github.ref_name, 'release-cli') }}
     uses: ./.github/workflows/release-cli.yml
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
+    secrets:
+      SERVICE_ACCOUNT_TOKEN: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}

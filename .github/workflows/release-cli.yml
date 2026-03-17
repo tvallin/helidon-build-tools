@@ -23,6 +23,9 @@ on:
         required: true
         type: string
         default: ''
+    secrets:
+      SERVICE_ACCOUNT_TOKEN:
+        required: true
 
 concurrency:
   group: release-cli-${{ github.workflow }}-${{ github.ref }}
