@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2025 Oracle and/or its affiliates.
+# Copyright (c) 2025, 2026 Oracle and/or its affiliates.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # HomeBrew detects the new tag and create a PR against brew repository
   create-cli-tag:
     runs-on: ubuntu-24.04
     environment: release
@@ -43,3 +44,44 @@ jobs:
             cli_tag="cli/${version}"
             git tag -f "${cli_tag}"
             git push --force origin refs/tags/"${cli_tag}":refs/tags/"${cli_tag}"
+
+  # Publish new CLI candidate to SDKMan!
+  sdkman-publish:
+    runs-on: ubuntu-22.04
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
+      - uses: ./.github/actions/common
+        with:
+          run: |
+            version=$(echo '${{ inputs.tag }}' | cut -d '/' -f 3)
+            curl -X POST \
+              -H "Consumer-Key: ${{ secrets.SDKMAN_KEY }}" \
+              -H "Consumer-Token: ${{ secrets.SDKMAN_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json" \
+              -d '{"candidate": "helidon", "version": "${version}", "url": "https://github.com/helidon-io/helidon-build-tools/releases/download/${version}/helidon-cli.zip"}' \
+                https://vendors.sdkman.io/release
+
+  # Set the new candidate version as default
+  sdkman-default-version:
+    runs-on: ubuntu-22.04
+    environment: release
+    needs: sdkman-publish
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SERVICE_ACCOUNT_TOKEN }}
+      - uses: ./.github/actions/common
+        with:
+          run: |
+            version=$(echo '${{ inputs.tag }}' | cut -d '/' -f 3)
+            curl -X PUT \
+              -H "Consumer-Key: ${{ secrets.SDKMAN_KEY }}" \
+              -H "Consumer-Token: ${{ secrets.SDKMAN_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json" \
+              -d '{"candidate": "helidon", "version": "${version}" }' \
+              https://vendors.sdkman.io/default
