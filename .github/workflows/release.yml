@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: "Release"
+name: "Release CLI"
 
 on:
   push:
@@ -107,7 +107,6 @@ jobs:
           path: staging
   release-cli:
     if: ${{ startsWith(github.ref_name, 'release-cli') }}
-    needs: deploy
     uses: ./.github/workflows/release-cli.yml
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
